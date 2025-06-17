@@ -13,6 +13,7 @@ import {
 } from "@src/components/ui/form"
 import { Input } from "@src/components/ui/input"
 import { authClient } from "@src/lib/auth-client"
+import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -36,9 +37,7 @@ const RegisterForm = () => {
     },
   })
 
-  // TODO on create account, add cellPhone to the user table
   async function onSubmit(values: z.infer<typeof registerFormSchema>) {
-    console.log("Form values: ", values)
     await authClient.signUp.email({
       name: values.name,
       email: values.email,
@@ -124,12 +123,11 @@ const RegisterForm = () => {
               className="w-full mt-4"
               disabled={form.watch("password") !== form.watch("confirmPassword") || form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting && (
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              {form.formState.isSubmitting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Criar Conta"
               )}
-              {form.watch("password") !== form.watch("confirmPassword") 
-                ? "As senhas não coincidem" 
-                : "Criar Conta"}
             </Button>
           </CardContent>
         </form>

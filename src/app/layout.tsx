@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import { Toaster } from "@src/components/ui/sonner"
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
     </html>
