@@ -12,33 +12,43 @@ import {
   FormMessage,
 } from "@src/components/ui/form"
 import { Input } from "@src/components/ui/input"
+import { authClient } from "@src/lib/auth-client"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 const registerFormSchema = z.object({
   name: z.string().trim().min(3, { message: "Nome é obrigatório" }).max(50),
   email: z.string().trim().email({ message: "E-mail inválido" }),
-  cellPhone: z.string().trim().min(11, { message: "Celular inválido" }),
   password: z.string().trim().min(8, { message: "Senha deve ter pelo menos 8 caracteres" }),
   confirmPassword: z.string().trim().min(8, { message: "Senha deve ter pelo menos 8 caracteres" }),
 })
 
 const RegisterForm = () => {
+  const router = useRouter()
   const form = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       name: "",
       email: "",
-      cellPhone: "",
       password: "",
       confirmPassword: "",
     },
   })
 
-  function onSubmit(values: z.infer<typeof registerFormSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
+  // TODO on create account, add cellPhone to the user table
+  async function onSubmit(values: z.infer<typeof registerFormSchema>) {
+    console.log("Form values: ", values)
+    await authClient.signUp.email({
+      name: values.name,
+      email: values.email,
+      password: values.password,
+      callbackURL: "/home",
+    }, {
+      onSuccess: () => {
+        router.push("/home")
+      },
+    });
   }
 
   return (
@@ -81,20 +91,6 @@ const RegisterForm = () => {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="cellPhone"
-              render={({ field }) => (
-                <FormItem className="mt-4">
-                  <FormLabel>Celular</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Digite seu celular" {...field} type="tel" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           
             <FormField
               control={form.control}
@@ -126,8 +122,11 @@ const RegisterForm = () => {
             <Button 
               type="submit" 
               className="w-full mt-4"
-              disabled={form.watch("password") !== form.watch("confirmPassword")}
+              disabled={form.watch("password") !== form.watch("confirmPassword") || form.formState.isSubmitting}
             >
+              {form.formState.isSubmitting && (
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              )}
               {form.watch("password") !== form.watch("confirmPassword") 
                 ? "As senhas não coincidem" 
                 : "Criar Conta"}
